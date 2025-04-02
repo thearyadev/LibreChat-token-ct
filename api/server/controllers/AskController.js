@@ -105,6 +105,8 @@ const AskController = async (req, res, next, initializeClient, addTitle) => {
     let response = await client.sendMessage(text, messageOptions);
     response.endpoint = endpointOption.endpoint;
 
+    const usage = { ...client.usage };
+
     const { conversation = {} } = await client.responsePromise;
     conversation.title =
       conversation && !conversation.title ? null : conversation?.title || 'New Chat';
@@ -121,14 +123,14 @@ const AskController = async (req, res, next, initializeClient, addTitle) => {
         conversation,
         title: conversation.title,
         requestMessage: userMessage,
-        responseMessage: response,
+        responseMessage: { ...response, tmp_usage: usage },
       });
       res.end();
 
       if (!client.savedMessageIds.has(response.messageId)) {
         await saveMessage(
           req,
-          { ...response, user },
+          { ...response, user, usage },
           { context: 'api/server/controllers/AskController.js - response end' },
         );
       }

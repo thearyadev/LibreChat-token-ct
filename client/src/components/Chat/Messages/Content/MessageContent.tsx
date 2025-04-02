@@ -1,3 +1,4 @@
+/* eslint-disable i18next/no-literal-string */
 import { memo, Suspense, useMemo } from 'react';
 import { useRecoilValue } from 'recoil';
 import type { TMessage } from 'librechat-data-provider';
@@ -166,9 +167,34 @@ const MessageContent = ({
         text={regularContent}
         {...props}
       />
+      {!!(props.message as any).tmp_usage &&
+        (() => {
+          const usage = (props.message as any).tmp_usage;
+          const input = usage.prompt_tokens || 0;
+          const cachedInput = usage.prompt_tokens_details?.cached_tokens || 0;
+          const output = usage.completion_tokens || 0;
+          const cost = usage.cost || 0;
+
+          return (
+            <div className="text-xs text-gray-300 dark:text-gray-600">
+              ↑ {formatTokensUsage(input)}{' '}
+              {cachedInput > 0 ? (
+                <span className="text-xs">({formatTokensUsage(cachedInput)} cached)</span>
+              ) : (
+                ''
+              )}{' '}
+              · ↓ {formatTokensUsage(output)} · $
+              {Math.max(Math.ceil(cost * 1000) / 1000, 0.001).toFixed(3)}
+            </div>
+          );
+        })()}
       {unfinishedMessage}
     </>
   );
 };
 
 export default memo(MessageContent);
+
+function formatTokensUsage(tokens: number) {
+  return tokens > 1000 ? (tokens / 1000).toFixed(1) + 'kt' : tokens.toString() + 't';
+}

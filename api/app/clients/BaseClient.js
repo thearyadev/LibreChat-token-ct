@@ -728,7 +728,7 @@ class BaseClient {
       }
     }
 
-    this.responsePromise = this.saveMessageToDatabase(responseMessage, saveOptions, user);
+    this.responsePromise = this.saveMessageToDatabase({ ...responseMessage, tmp_usage: this.usage }, saveOptions, user);
     this.savedMessageIds.add(responseMessage.messageId);
     delete responseMessage.tokenCount;
     return responseMessage;

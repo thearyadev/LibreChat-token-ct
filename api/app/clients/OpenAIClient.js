@@ -189,8 +189,7 @@ class OpenAIClient extends BaseClient {
 
     if (this.maxPromptTokens + this.maxResponseTokens > this.maxContextTokens) {
       throw new Error(
-        `maxPromptTokens + max_tokens (${this.maxPromptTokens} + ${this.maxResponseTokens} = ${
-          this.maxPromptTokens + this.maxResponseTokens
+        `maxPromptTokens + max_tokens (${this.maxPromptTokens} + ${this.maxResponseTokens} = ${this.maxPromptTokens + this.maxResponseTokens
         }) must be less than or equal to maxContextTokens (${this.maxContextTokens})`,
       );
     }
@@ -1010,8 +1009,7 @@ ${convo}
       if (this.options.debug) {
         logger.debug('[OpenAIClient] summaryTokenCount', summaryTokenCount);
         logger.debug(
-          `[OpenAIClient] Summarization complete: remainingContextTokens: ${remainingContextTokens}, after refining: ${
-            remainingContextTokens - summaryTokenCount
+          `[OpenAIClient] Summarization complete: remainingContextTokens: ${remainingContextTokens}, after refining: ${remainingContextTokens - summaryTokenCount
           }`,
         );
       }
@@ -1478,7 +1476,44 @@ ${convo}
       }
 
       const { choices } = chatCompletion;
-      this.usage = chatCompletion.usage;
+      this.usage = { ...chatCompletion.usage };
+
+      const cachedPromptTokens = this.usage?.prompt_tokens_details?.cached_tokens || 0;
+      const notCachedPromptTokens = (this.usage?.prompt_tokens || 0) - cachedPromptTokens;
+      const completionTokens = this.usage?.completion_tokens || 0;
+
+      switch (modelOptions.model) {
+        case 'gpt-4o-mini': {
+          this.usage.cost = (
+            notCachedPromptTokens * (0.150 / 1_000_000)
+          ) + (
+            cachedPromptTokens * (0.075 / 1_000_000)
+          ) + (
+            completionTokens * (0.600 / 1_000_000)
+          );
+          break;
+        }
+        case 'gpt-4o': {
+          this.usage.cost = (
+            notCachedPromptTokens * (2.50 / 1_000_000)
+          ) + (
+            cachedPromptTokens * (1.25 / 1_000_000)
+          ) + (
+            completionTokens * (10.00 / 1_000_000)
+          );
+          break;
+        }
+        case 'gpt-4.5-preview': {
+          this.usage.cost = (
+            notCachedPromptTokens * (75.00 / 1_000_000)
+          ) + (
+            cachedPromptTokens * (37.50 / 1_000_000)
+          ) + (
+            completionTokens * (150.00 / 1_000_000)
+          );
+          break;
+        }
+      }
 
       if (!Array.isArray(choices) || choices.length === 0) {
         logger.warn('[OpenAIClient] Chat completion response has no choices');

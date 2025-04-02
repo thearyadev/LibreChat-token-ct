@@ -35,6 +35,7 @@ export interface IMessage extends Document {
   expiredAt?: Date;
   createdAt?: Date;
   updatedAt?: Date;
+  tmp_usage?: unknown;
 }
 
 const messageSchema: Schema<IMessage> = new Schema(
@@ -173,6 +174,9 @@ const messageSchema: Schema<IMessage> = new Schema(
     */
     expiredAt: {
       type: Date,
+    },
+    tmp_usage: {
+      type: Object,
     },
   },
   { timestamps: true },
