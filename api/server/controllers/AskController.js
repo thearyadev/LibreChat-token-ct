@@ -101,6 +101,12 @@ const AskController = async (req, res, next, initializeClient, addTitle) => {
       },
     };
 
+    const mockResponse = req.cookies.mockResponse;
+
+    if (mockResponse === 'true') {
+      client.mock = true;
+    }
+
     /** @type {TMessage} */
     let response = await client.sendMessage(text, messageOptions);
     response.endpoint = endpointOption.endpoint;

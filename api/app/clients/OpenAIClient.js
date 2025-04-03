@@ -1372,7 +1372,7 @@ ${convo}
 
       intermediateReply = this.streamHandler.tokens;
 
-      if (modelOptions.stream) {
+      if (!this.mock && modelOptions.stream) {
         streamPromise = new Promise((resolve) => {
           streamResolve = resolve;
         });
@@ -1461,14 +1461,55 @@ ${convo}
         }
       }
       // regular completion
-      else {
+      else if (!this.mock) {
         chatCompletion = await openai.chat.completions
           .create({
             ...modelOptions,
+            stream: false,
           })
           .catch((err) => {
             handleOpenAIErrors(err, errorCallback, 'create');
           });
+      }
+      // mock
+      else {
+        chatCompletion = {
+          id: 'chatcmpl-mocked',
+          object: 'chat.completion',
+          created: parseInt(Date.now() / 1000, 10),
+          model: modelOptions.model,
+          choices: [
+            {
+              index: 0,
+              message: {
+                role: 'assistant',
+                content: '...',
+                refusal: null,
+                annotations: [
+                ],
+              },
+              logprobs: null,
+              finish_reason: 'stop',
+            },
+          ],
+          usage: {
+            prompt_tokens: 0,
+            completion_tokens: 0,
+            total_tokens: 0,
+            prompt_tokens_details: {
+              cached_tokens: 0,
+              audio_tokens: 0,
+            },
+            completion_tokens_details: {
+              reasoning_tokens: 0,
+              audio_tokens: 0,
+              accepted_prediction_tokens: 0,
+              rejected_prediction_tokens: 0,
+            },
+          },
+          service_tier: 'default',
+          system_fingerprint: 'fp_mocked',
+        };
       }
 
       if (!chatCompletion && UnexpectedRoleError) {
