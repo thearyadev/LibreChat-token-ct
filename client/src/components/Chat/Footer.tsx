@@ -5,7 +5,13 @@ import { Constants } from 'librechat-data-provider';
 import { useGetStartupConfig } from '~/data-provider';
 import { useLocalize } from '~/hooks';
 
-export default function Footer({ className }: { className?: string }) {
+export default function Footer({
+  className,
+  additionalText,
+}: {
+  className?: string;
+  additionalText?: string;
+}) {
   const { data: config } = useGetStartupConfig();
   const localize = useLocalize();
 
@@ -14,7 +20,7 @@ export default function Footer({ className }: { className?: string }) {
 
   const privacyPolicyRender = privacyPolicy?.externalUrl != null && (
     <a
-      className="text-text-secondary underline"
+      className="text-text-tertiary underline"
       href={privacyPolicy.externalUrl}
       target={privacyPolicy.openNewTab === true ? '_blank' : undefined}
       rel="noreferrer"
@@ -25,7 +31,7 @@ export default function Footer({ className }: { className?: string }) {
 
   const termsOfServiceRender = termsOfService?.externalUrl != null && (
     <a
-      className="text-text-secondary underline"
+      className="text-text-tertiary underline"
       href={termsOfService.externalUrl}
       target={termsOfService.openNewTab === true ? '_blank' : undefined}
       rel="noreferrer"
@@ -43,6 +49,10 @@ export default function Footer({ className }: { className?: string }) {
         localize('com_ui_latest_footer')
   ).split('|');
 
+  if (additionalText) {
+    mainContentParts.unshift(additionalText);
+  }
+
   useEffect(() => {
     if (config?.analyticsGtmId != null && typeof window.google_tag_manager === 'undefined') {
       const tagManagerArgs = {
@@ -59,7 +69,7 @@ export default function Footer({ className }: { className?: string }) {
           a: ({ node: _n, href, children, ...otherProps }) => {
             return (
               <a
-                className="text-text-secondary underline"
+                className="text-text-tertiary underline"
                 href={href}
                 target="_blank"
                 rel="noreferrer"
@@ -87,7 +97,7 @@ export default function Footer({ className }: { className?: string }) {
       <div
         className={
           className ??
-          'absolute bottom-0 left-0 right-0 hidden items-center justify-center gap-2 px-2 py-2 text-center text-xs text-text-primary sm:flex md:px-[60px]'
+          'absolute bottom-0 left-0 right-0 hidden items-center justify-center gap-2 px-2 py-2 text-center text-xs text-text-tertiary sm:flex md:px-[60px]'
         }
         role="contentinfo"
       >
